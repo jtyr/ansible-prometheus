@@ -1,0 +1,9 @@
+---
+
+- name: Restart Prometheus service
+  service:
+    name: "{{ prometheus_service }}"
+    state: restarted
+  when: >
+    prometheus_service_started is not defined or
+    not prometheus_service_started.changed

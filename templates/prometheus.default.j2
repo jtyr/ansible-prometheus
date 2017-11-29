@@ -1,0 +1,3 @@
+{{ ansible_managed | comment }}
+
+{{ prometheus_default | encode_ini(ucase_prop=true) }}

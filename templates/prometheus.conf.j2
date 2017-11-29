@@ -1,0 +1,3 @@
+{{ ansible_managed | comment }}
+
+{{ prometheus_config | encode_yaml(convert_bools=true, convert_nums=true) }}

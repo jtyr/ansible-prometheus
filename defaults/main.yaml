@@ -1,0 +1,299 @@
+---
+
+# YUM repo URL
+prometheus_yumrepo_url: "{{
+  prometheusio_yum_repo_url |
+  default('https://packagecloud.io/prometheus-rpm/release/el/' ~ ansible_distribution_major_version ~ '/$basearch/') }}"
+
+# YUM repo GPG key URL
+prometheus_yumrepo_gpgkey: "{{
+  prometheusio_yum_repo_gpgkey |
+  default([
+    'https://packagecloud.io/prometheus-rpm/release/gpgkey',
+    'https://raw.githubusercontent.com/lest/prometheus-rpm/master/RPM-GPG-KEY-prometheus-rpm']) }}"
+
+# APT repo string
+prometheus_apt_repo_string: "{{
+  prometheusio_apt_repo_string |
+  default('deb https://packagecloud.io/prometheus-deb/release/ubuntu xenial main') }}"
+
+# GPG key for the APT repo
+prometheus_apt_repo_key: "{{
+  prometheusio_apt_repo_key |
+  default('https://packagecloud.io/prometheus-deb/release/gpgkey') }}"
+
+# Package to be installed (explicit version can be specified here)
+prometheus_pkg: "{{
+  'prometheus2'
+    if ansible_os_family == 'RedHat'
+    else
+  'prometheus' }}"
+
+# Name of the service
+prometheus_service: prometheus
+
+
+# Location of the service default file
+prometheus_default_file: /etc/default/prometheus
+
+# Location of the timeseries storage directory
+prometheus_storage_dir: /var/lib/prometheus/data
+
+# Default service defaults
+prometheus_default__default:
+  prometheus_opts: >
+    --config.file={{ prometheus_config_file }}
+    --storage.tsdb.path={{ prometheus_storage_dir }}
+
+# Custom service defaults
+prometheus_default__custom: {}
+
+# Final service defaults
+prometheus_default: "{{
+  prometheus_default__default.update(prometheus_default__custom) }}{{
+  prometheus_default__default }}"
+
+
+# Location of the main config file
+prometheus_config_file: /etc/prometheus/prometheus.yml
+
+
+# Values of the default options of the global section
+prometheus_config_global_evaluation_interval: 1m
+prometheus_config_global_scrape_interval: 1m
+prometheus_config_global_scrape_timeout: 10s
+prometheus_config_global_external_labels: {}
+
+# Default options of the global section
+prometheus_config_global__default:
+  evaluation_interval: "{{ prometheus_config_global_evaluation_interval }}"
+  scrape_interval: "{{ prometheus_config_global_scrape_interval }}"
+  scrape_timeout: "{{ prometheus_config_global_scrape_timeout }}"
+  external_labels: "{{ prometheus_config_global_external_labels }}"
+
+# Custom options of the global section
+prometheus_config_global__custom: {}
+
+# Final options of the global section
+prometheus_config_global: "{{
+  prometheus_config_global__default.update(prometheus_config_global__custom) }}{{
+  prometheus_config_global__default }}"
+
+
+# Values of the options of the targets subsection of the static_configs
+# subsection of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_targets_host: alertmanager
+prometheus_config_alerting_alertmanagers_static_configs_targets_port: 9093
+
+# Default options of the targets subsection of the static_configs subsection of
+# the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_targets__default:
+  - "{{
+        prometheus_config_alerting_alertmanagers_static_configs_targets_host ~
+        ':' ~
+        prometheus_config_alerting_alertmanagers_static_configs_targets_port }}"
+
+# Custom options of the targets subsection of the static_configs subsection of
+# the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_targets__custom: []
+
+# Final options of the targets subsection of the static_configs subsection of
+# the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_targets: "{{
+  prometheus_config_alerting_alertmanagers_static_configs_targets__default +
+  prometheus_config_alerting_alertmanagers_static_configs_targets__custom }}"
+
+
+# Default item of the static_configs subsection of the alertmanagers subsection
+# of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_item__default:
+  targets: "{{ prometheus_config_alerting_alertmanagers_static_configs_targets }}"
+
+# Custom item of the static_configs subsection of the alertmanagers subsection
+# of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_item__custom: {}
+
+# Final item of the static_configs subsection of the alertmanagers subsection
+# of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs_item: "{{
+  prometheus_config_alerting_alertmanagers_static_configs_item__default.update(
+  prometheus_config_alerting_alertmanagers_static_configs_item__custom) }}{{
+  prometheus_config_alerting_alertmanagers_static_configs_item__default }}"
+
+
+# Default options of the static_configs subsection of the alertmanagers
+# subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs__default:
+  - "{{ prometheus_config_alerting_alertmanagers_static_configs_item }}"
+
+# Custom options of the static_configs subsection of the alertmanagers
+# subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs__custom: []
+
+# Final options of the static_configs subsection of the alertmanagers
+# subsection of the alerting section
+prometheus_config_alerting_alertmanagers_static_configs: "{{
+  prometheus_config_alerting_alertmanagers_static_configs__default +
+  prometheus_config_alerting_alertmanagers_static_configs__custom }}"
+
+
+# Default options of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers__default:
+  - static_configs: "{{ prometheus_config_alerting_alertmanagers_static_configs }}"
+
+# Custom options of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers__custom: []
+
+# Final options of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers: "{{
+  prometheus_config_alerting_alertmanagers__default +
+  prometheus_config_alerting_alertmanagers__custom }}"
+
+
+# Default options of the alerting section
+prometheus_config_alerting__default:
+  alertmanagers: "{{ prometheus_config_alerting_alertmanagers }}"
+
+# Custom options of the alerting section
+prometheus_config_alerting__custom: {}
+
+# Final options of the alerting section
+prometheus_config_alerting: "{{
+  prometheus_config_alerting__default.update(prometheus_config_alerting__custom) }}{{
+  prometheus_config_alerting__default }}"
+
+
+# Default options of the remote_read section
+prometheus_config_remote_read__default: []
+
+# Custom options of the remote_read section
+prometheus_config_remote_read__custom: []
+
+# Final options of the remote_read section
+prometheus_config_remote_read: "{{
+  prometheus_config_remote_read__default +
+  prometheus_config_remote_read__custom }}"
+
+
+# Default options of the remote_write section
+prometheus_config_remote_write__default: []
+
+# Custom options of the remote_write section
+prometheus_config_remote_write__custom: []
+
+# Final options of the remote_write section
+prometheus_config_remote_write: "{{
+  prometheus_config_remote_write__default +
+  prometheus_config_remote_write__custom }}"
+
+
+# Default options of the rule_files section
+prometheus_config_rule_files__default: []
+
+# Custom options of the rule_files section
+prometheus_config_rule_files__custom: []
+
+# Final options of the rule_files section
+prometheus_config_rule_files: "{{
+  prometheus_config_rule_files__default +
+  prometheus_config_rule_files__custom }}"
+
+
+# Values of the options of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_targets_host: localhost
+prometheus_config_scrape_configs_static_configs_targets_port: 9090
+
+# Default options of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_targets__default:
+  - "{{
+        prometheus_config_scrape_configs_static_configs_targets_host ~
+        ':' ~
+        prometheus_config_scrape_configs_static_configs_targets_port }}"
+
+# Custom options of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_targets__custom: []
+
+# Final options of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_targets: "{{
+  prometheus_config_scrape_configs_static_configs_targets__default +
+  prometheus_config_scrape_configs_static_configs_targets__custom }}"
+
+
+# Default item of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_item__default:
+  targets: "{{ prometheus_config_scrape_configs_static_configs_targets }}"
+
+# Custom item of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_item__custom: {}
+
+# Final item of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs_item: "{{
+  prometheus_config_scrape_configs_static_configs_item__default.update(
+  prometheus_config_scrape_configs_static_configs_item__custom) }}{{
+  prometheus_config_scrape_configs_static_configs_item__default }}"
+
+
+# Default options of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs__default:
+  - "{{ prometheus_config_scrape_configs_static_configs_item }}"
+
+# Custom options of the static_configs subsection of the scrape_configs subsection
+prometheus_config_scrape_configs_static_configs__custom: []
+
+
+# Values of the option of the the scrape_configs section
+prometheus_config_scrape_configs_job_name: prometheus
+prometheus_config_scrape_configs_static_configs: "{{
+  prometheus_config_scrape_configs_static_configs__default +
+  prometheus_config_scrape_configs_static_configs__custom }}"
+
+# Default item of the scrape_configs section
+prometheus_config_scrape_configs_item__default:
+  job_name: "{{ prometheus_config_scrape_configs_job_name }}"
+  static_configs: "{{ prometheus_config_scrape_configs_static_configs }}"
+
+# Custom item of the scrape_configs section
+prometheus_config_scrape_configs_item__custom: {}
+
+# Final item of the scrape_configs section
+prometheus_config_scrape_configs_item: "{{
+  prometheus_config_scrape_configs_item__default.update(
+  prometheus_config_scrape_configs_item__custom) }}{{
+  prometheus_config_scrape_configs_item__default }}"
+
+
+# Default options of the scrape_configs section
+prometheus_config_scrape_configs__default:
+  - "{{ prometheus_config_scrape_configs_item }}"
+
+# Custom options of the scrape_configs section
+prometheus_config_scrape_configs__custom: []
+
+# Final options of the scrape_configs section
+prometheus_config_scrape_configs: "{{
+  prometheus_config_scrape_configs__default +
+  prometheus_config_scrape_configs__custom }}"
+
+# Default config
+prometheus_config__default:
+  global: "{{ prometheus_config_global }}"
+  alerting: "{{ prometheus_config_alerting }}"
+  remote_read: "{{ prometheus_config_remote_read }}"
+  remote_write: "{{ prometheus_config_remote_write }}"
+  rule_files: "{{ prometheus_config_rule_files }}"
+  scrape_configs: "{{ prometheus_config_scrape_configs }}"
+
+# Custom config
+prometheus_config__custom: {}
+
+# Final config
+prometheus_config: "{{
+  prometheus_config__default.update(prometheus_config__custom) }}{{
+  prometheus_config__default }}"
+
+
+# Location where to store the rules files
+prometheus_rule_files_dir: /etc/prometheus/rules
+
+# Prometheus rules (see README.md for examples)
+prometheus_rule_files: {}
