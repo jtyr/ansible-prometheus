@@ -29,8 +29,6 @@ Examples
     # Change scraping interval
     prometheus_config_global_evaluation_interval: 15s
     prometheus_config_global_scrape_interval: 30s
-    # Change hostname for the alertmanager
-    prometheus_config_alerting_alertmanagers_static_configs_targets_host: myamserver1
     # Add additional scrape_config
     prometheus_config_scrape_configs__custom:
       - job_name: service-z
@@ -38,9 +36,14 @@ Examples
           cert_file: valid_cert_file
           key_file: valid_key_file
         bearer_token: mysecret
+    # Change hostname and protocol for the Alertmanager
+    prometheus_config_alerting_alertmanagers_static_configs_targets__default:
+      - myamserver1
+    prometheus_config_alerting_alertmanagers_item__custom:
+      - scheme: https
     # Define which rule files to load
     prometheus_config_rule_files:
-      - /etc/prometheus/rules/alerting_*
+      - /etc/prometheus/rules/*.yml
     # Create rule files
     prometheus_rule_files:
       # This is the name of the file in /etc/prometheus/rules/
@@ -110,12 +113,12 @@ prometheus_yumrepo_gpgkey: "{{
 # APT repo string
 prometheus_apt_repo_string: "{{
   prometheusio_apt_repo_string |
-  default('deb https://packagecloud.io/jtyr/prometheus-deb/ubuntu ' ~ ansible_distribution_release ~ ' stable') }}"
+  default('deb https://packagecloud.io/prometheus-deb/release/ubuntu xenial main') }}"
 
 # GPG key for the APT repo
 prometheus_apt_repo_key: "{{
   prometheusio_apt_repo_key |
-  default('https://packagecloud.io/jtyr/prometheus-deb/gpgkey') }}"
+  default('https://packagecloud.io/prometheus-deb/release/gpgkey') }}"
 
 # Package to be installed (explicit version can be specified here)
 prometheus_pkg: "{{
@@ -232,9 +235,23 @@ prometheus_config_alerting_alertmanagers_static_configs: "{{
   prometheus_config_alerting_alertmanagers_static_configs__custom }}"
 
 
+# Default options of the first item of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_item__default:
+  static_configs: "{{ prometheus_config_alerting_alertmanagers_static_configs }}"
+
+# Custom options of the first item of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_item__custom: {}
+
+# Final options of the first item of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_item: "{{
+  prometheus_config_alerting_alertmanagers_item__default.update(
+  prometheus_config_alerting_alertmanagers_item__custom) }}{{
+  prometheus_config_alerting_alertmanagers_item__default }}"
+
+
 # Default options of the alertmanagers subsection of the alerting section
 prometheus_config_alerting_alertmanagers__default:
-  - static_configs: "{{ prometheus_config_alerting_alertmanagers_static_configs }}"
+  - "{{ prometheus_config_alerting_alertmanagers_item }}"
 
 # Custom options of the alertmanagers subsection of the alerting section
 prometheus_config_alerting_alertmanagers__custom: []

@@ -137,9 +137,23 @@ prometheus_config_alerting_alertmanagers_static_configs: "{{
   prometheus_config_alerting_alertmanagers_static_configs__custom }}"
 
 
+# Default options of the first item of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_item__default:
+  static_configs: "{{ prometheus_config_alerting_alertmanagers_static_configs }}"
+
+# Custom options of the first item of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_item__custom: {}
+
+# Final options of the first item of the alertmanagers subsection of the alerting section
+prometheus_config_alerting_alertmanagers_item: "{{
+  prometheus_config_alerting_alertmanagers_item__default.update(
+  prometheus_config_alerting_alertmanagers_item__custom) }}{{
+  prometheus_config_alerting_alertmanagers_item__default }}"
+
+
 # Default options of the alertmanagers subsection of the alerting section
 prometheus_config_alerting_alertmanagers__default:
-  - static_configs: "{{ prometheus_config_alerting_alertmanagers_static_configs }}"
+  - "{{ prometheus_config_alerting_alertmanagers_item }}"
 
 # Custom options of the alertmanagers subsection of the alerting section
 prometheus_config_alerting_alertmanagers__custom: []
