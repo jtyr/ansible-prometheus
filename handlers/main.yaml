@@ -4,6 +4,20 @@
   service:
     name: "{{ prometheus_service }}"
     state: restarted
+  register: prometheus_service_restarted
   when: >
     prometheus_service_started is not defined or
     not prometheus_service_started.changed
+
+- name: Reload Prometheus service
+  service:
+    name: "{{ prometheus_service }}"
+    state: reloaded
+  when: >
+    (
+      prometheus_service_started is not defined or
+      not prometheus_service_started.changed
+    ) and (
+      prometheus_service_restarted is not defined or
+      not prometheus_service_restarted.changed
+    )
