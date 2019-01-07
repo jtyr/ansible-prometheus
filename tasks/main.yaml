@@ -5,6 +5,8 @@
     that: >
       ansible_os_family == 'RedHat' or
       ansible_os_family == 'Debian'
+  tags:
+    - prometheus_assert
 
 - name: Add YUM repo
   yum_repository:
@@ -83,9 +85,13 @@
   service:
     name: "{{ prometheus_service }}"
     enabled: yes
+  tags:
+    - prometheus_service
 
 - name: Make sure Prometheus service is running
   service:
     name: "{{ prometheus_service }}"
     state: started
   register: prometheus_service_started
+  tags:
+    - prometheus_service
