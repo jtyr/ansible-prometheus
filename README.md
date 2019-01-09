@@ -99,16 +99,19 @@ List of variables used by the role:
 
 ```yaml
 # YUM repo URL
-prometheus_yumrepo_url: "{{
+prometheus_yum_repo_url: "{{
   prometheusio_yum_repo_url |
-  default('https://packagecloud.io/prometheus-rpm/release/el/' ~ ansible_distribution_major_version ~ '/$basearch/') }}"
+  default('https://packagecloud.io/prometheus-rpm/release/el/' ~ ansible_facts.distribution_major_version ~ '/$basearch/') }}"
 
 # YUM repo GPG key URL
-prometheus_yumrepo_gpgkey: "{{
+prometheus_yum_repo_gpgkey: "{{
   prometheusio_yum_repo_gpgkey |
   default([
     'https://packagecloud.io/prometheus-rpm/release/gpgkey',
     'https://raw.githubusercontent.com/lest/prometheus-rpm/master/RPM-GPG-KEY-prometheus-rpm']) }}"
+
+# Additional YUM repo params
+prometheus_yum_repo_params: "{{ prometheusio_yum_repo_params | default({})}}"
 
 # APT repo string
 prometheus_apt_repo_string: "{{
@@ -120,10 +123,13 @@ prometheus_apt_repo_key: "{{
   prometheusio_apt_repo_key |
   default('https://packagecloud.io/prometheus-deb/release/gpgkey') }}"
 
+# Additional YUM repo params
+prometheus_apt_repo_params: "{{ prometheusio_apt_repo_params | default({})}}"
+
 # Package to be installed (explicit version can be specified here)
 prometheus_pkg: "{{
   'prometheus2'
-    if ansible_os_family == 'RedHat'
+    if ansible_facts.os_family == 'RedHat'
     else
   'prometheus' }}"
 
@@ -148,8 +154,8 @@ prometheus_default__custom: {}
 
 # Final service defaults
 prometheus_default: "{{
-  prometheus_default__default.update(prometheus_default__custom) }}{{
-  prometheus_default__default }}"
+  prometheus_default__default | combine(
+  prometheus_default__custom) }}"
 
 
 # Location of the main config file
@@ -157,8 +163,8 @@ prometheus_config_file: /etc/prometheus/prometheus.yml
 
 
 # Values of the default options of the global section
-prometheus_config_global_evaluation_interval: 1m
-prometheus_config_global_scrape_interval: 1m
+prometheus_config_global_evaluation_interval: 15s
+prometheus_config_global_scrape_interval: 15s
 prometheus_config_global_scrape_timeout: 10s
 prometheus_config_global_external_labels: {}
 
@@ -174,13 +180,13 @@ prometheus_config_global__custom: {}
 
 # Final options of the global section
 prometheus_config_global: "{{
-  prometheus_config_global__default.update(prometheus_config_global__custom) }}{{
-  prometheus_config_global__default }}"
+  prometheus_config_global__default | combine(
+  prometheus_config_global__custom) }}"
 
 
 # Values of the options of the targets subsection of the static_configs
 # subsection of the alertmanagers subsection of the alerting section
-prometheus_config_alerting_alertmanagers_static_configs_targets_host: alertmanager
+prometheus_config_alerting_alertmanagers_static_configs_targets_host: localhost
 prometheus_config_alerting_alertmanagers_static_configs_targets_port: 9093
 
 # Default options of the targets subsection of the static_configs subsection of
@@ -214,9 +220,8 @@ prometheus_config_alerting_alertmanagers_static_configs_item__custom: {}
 # Final item of the static_configs subsection of the alertmanagers subsection
 # of the alerting section
 prometheus_config_alerting_alertmanagers_static_configs_item: "{{
-  prometheus_config_alerting_alertmanagers_static_configs_item__default.update(
-  prometheus_config_alerting_alertmanagers_static_configs_item__custom) }}{{
-  prometheus_config_alerting_alertmanagers_static_configs_item__default }}"
+  prometheus_config_alerting_alertmanagers_static_configs_item__default | combine(
+  prometheus_config_alerting_alertmanagers_static_configs_item__custom) }}"
 
 
 # Default options of the static_configs subsection of the alertmanagers
@@ -244,9 +249,8 @@ prometheus_config_alerting_alertmanagers_item__custom: {}
 
 # Final options of the first item of the alertmanagers subsection of the alerting section
 prometheus_config_alerting_alertmanagers_item: "{{
-  prometheus_config_alerting_alertmanagers_item__default.update(
-  prometheus_config_alerting_alertmanagers_item__custom) }}{{
-  prometheus_config_alerting_alertmanagers_item__default }}"
+  prometheus_config_alerting_alertmanagers_item__default | combine(
+  prometheus_config_alerting_alertmanagers_item__custom) }}"
 
 
 # Default options of the alertmanagers subsection of the alerting section
@@ -271,8 +275,8 @@ prometheus_config_alerting__custom: {}
 
 # Final options of the alerting section
 prometheus_config_alerting: "{{
-  prometheus_config_alerting__default.update(prometheus_config_alerting__custom) }}{{
-  prometheus_config_alerting__default }}"
+  prometheus_config_alerting__default | combine(
+  prometheus_config_alerting__custom) }}"
 
 
 # Default options of the remote_read section
@@ -340,9 +344,8 @@ prometheus_config_scrape_configs_static_configs_item__custom: {}
 
 # Final item of the static_configs subsection of the scrape_configs subsection
 prometheus_config_scrape_configs_static_configs_item: "{{
-  prometheus_config_scrape_configs_static_configs_item__default.update(
-  prometheus_config_scrape_configs_static_configs_item__custom) }}{{
-  prometheus_config_scrape_configs_static_configs_item__default }}"
+  prometheus_config_scrape_configs_static_configs_item__default | combine(
+  prometheus_config_scrape_configs_static_configs_item__custom) }}"
 
 
 # Default options of the static_configs subsection of the scrape_configs subsection
@@ -369,9 +372,8 @@ prometheus_config_scrape_configs_item__custom: {}
 
 # Final item of the scrape_configs section
 prometheus_config_scrape_configs_item: "{{
-  prometheus_config_scrape_configs_item__default.update(
-  prometheus_config_scrape_configs_item__custom) }}{{
-  prometheus_config_scrape_configs_item__default }}"
+  prometheus_config_scrape_configs_item__default | combine(
+  prometheus_config_scrape_configs_item__custom) }}"
 
 
 # Default options of the scrape_configs section
@@ -400,8 +402,8 @@ prometheus_config__custom: {}
 
 # Final config
 prometheus_config: "{{
-  prometheus_config__default.update(prometheus_config__custom) }}{{
-  prometheus_config__default }}"
+  prometheus_config__default | combine(
+  prometheus_config__custom) }}"
 
 
 # Location where to store the rules files

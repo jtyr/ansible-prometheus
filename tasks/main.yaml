@@ -3,8 +3,8 @@
 - name: Test distribution
   assert:
     that: >
-      ansible_os_family == 'RedHat' or
-      ansible_os_family == 'Debian'
+      ansible_facts.os_family == 'RedHat' or
+      ansible_facts.os_family == 'Debian'
   tags:
     - prometheus_assert
 
@@ -12,10 +12,11 @@
   yum_repository:
     name: prometheus
     description: Prometheus YUM repo
-    baseurl: "{{ prometheus_yumrepo_url }}"
-    gpgkey: "{{ prometheus_yumrepo_gpgkey }}"
+    baseurl: "{{ prometheus_yum_repo_url }}"
+    gpgkey: "{{ prometheus_yum_repo_gpgkey }}"
+  args: "{{ prometheus_yum_repo_params }}"
   when: >
-    ansible_os_family == 'RedHat'
+    ansible_facts.os_family == 'RedHat'
   tags:
     - prometheus_pkg
 
@@ -24,7 +25,7 @@
     url: "{{ prometheus_apt_repo_key }}"
     state: present
   when: >
-    ansible_os_family == 'Debian'
+    ansible_facts.os_family == 'Debian'
   tags:
     - prometheus_pkg
 
@@ -32,8 +33,9 @@
   apt_repository:
     filename: prometheus
     repo: "{{ prometheus_apt_repo_string }}"
+  args: "{{ prometheus_apt_repo_params }}"
   when: >
-    ansible_os_family == 'Debian'
+    ansible_facts.os_family == 'Debian'
   tags:
     - prometheus_pkg
 
