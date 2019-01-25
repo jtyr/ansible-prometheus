@@ -47,9 +47,11 @@ prometheus_storage_dir: /var/lib/prometheus/data
 
 # Default service defaults
 prometheus_default__default:
-  prometheus_opts: >
+  prometheus_opts: >-
+    "
     --config.file={{ prometheus_config_file }}
     --storage.tsdb.path={{ prometheus_storage_dir }}
+    "
 
 # Custom service defaults
 prometheus_default__custom: {}
