@@ -58,9 +58,12 @@ Examples
                 labels:
                   severity: page
                 annotations:
-                  # We need to escape the '{{' and '}}' to prevent it to be
-                  # evaluated by Jinja2 in Ansible
-                  summary: "{% raw %}Instance {{ '{{' }} $labels.instance {{ '}}' }} down{% endraw %}"
+                  # We need double 'raw' escaping because the variable is
+                  # templated twice, once when read from the playbook, second
+                  # time when used in the loop.
+                  summary: "{{ '{% raw -%}' }}{% raw -%}Instance {{ $labels.instance }} down{% endraw -%}{{ '{% endraw -%}' }}"
+                  # This is another way how to do the escaping - wrap the
+                  # curly brackets in the Golang themplating like Jinja2 string.
                   description: "{% raw %}{{ '{{' }} $labels.instance {{ '}}' }} of job {{ '{{' }} $labels.job {{ '}}' }} has been down for more than 5 minutes.{% endraw %}"
   roles:
     - prometheus
